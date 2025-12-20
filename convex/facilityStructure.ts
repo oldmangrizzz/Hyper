@@ -5,6 +5,36 @@ import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { Id } from "./_generated/dataModel";
 
+type FacilityRecord = {
+  _id: Id<"facilities">;
+  eafId: string;
+  name: string;
+  parentId?: Id<"facilities">;
+  type: string;
+  settings: Record<string, unknown>;
+};
+
+type SettingLookupResult = {
+  value: unknown;
+  source: string;
+  facilityId?: Id<"facilities">;
+  facilityName?: string;
+  facilityType?: string;
+  departmentId?: Id<"departments">;
+  departmentName?: string;
+  error?: string;
+  description?: string;
+};
+
+type HierarchyNode = {
+  level: string;
+  id?: Id<"facilities"> | Id<"departments">;
+  name?: string;
+  identifier?: string;
+  settings: Record<string, unknown>;
+  parentId?: Id<"facilities">;
+};
+
 /**
  * Get a setting value with bubble-up logic
  * Checks Department -> Revenue Location -> Service Area -> Facility -> System Default
@@ -68,7 +98,11 @@ export const getSettingWithInheritance = query({
 /**
  * Recursive bubble-up through facility hierarchy
  */
-async function bubbleUpFacility(ctx: any, facilityId: Id<"facilities">, settingKey: string): Promise<any> {
+async function bubbleUpFacility(
+  ctx: { db: { get: (id: Id<"facilities">) => Promise<FacilityRecord | null> } },
+  facilityId: Id<"facilities">,
+  settingKey: string,
+): Promise<SettingLookupResult> {
   const facility = await ctx.db.get(facilityId);
   
   if (!facility) {
@@ -118,7 +152,7 @@ export const getDepartmentSettings = query({
     // Remove duplicates
     const uniqueKeys = Array.from(new Set(allSettingKeys));
 
-    const settings: Record<string, any> = {};
+    const settings: Record<string, SettingLookupResult> = {};
     
     for (const key of uniqueKeys) {
       const result = await getSettingWithInheritance(ctx, {
@@ -249,7 +283,7 @@ export const getFacilityHierarchy = query({
       return { error: "Department not found" };
     }
 
-    const hierarchy: any[] = [
+    const hierarchy: HierarchyNode[] = [
       {
         level: "Department",
         id: department._id,
@@ -261,7 +295,6 @@ export const getFacilityHierarchy = query({
 
     if (department.facilityId) {
       let currentFacilityId: Id<"facilities"> | undefined = department.facilityId;
-      let level = 1;
 
       while (currentFacilityId) {
         const facility = await ctx.db.get(currentFacilityId);
@@ -277,7 +310,6 @@ export const getFacilityHierarchy = query({
         });
 
         currentFacilityId = facility.parentId;
-        level++;
       }
     }
 
@@ -288,7 +320,7 @@ export const getFacilityHierarchy = query({
       settings: systemConfigs.reduce((acc, config) => {
         acc[config.key] = config.value;
         return acc;
-      }, {} as Record<string, any>),
+      }, {} as Record<string, unknown>),
     });
 
     return hierarchy;
