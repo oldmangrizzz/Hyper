@@ -26,6 +26,12 @@ type SettingLookupResult = {
   description?: string;
 };
 
+type FacilityCtx = {
+  db: {
+    get: (id: Id<"facilities">) => Promise<FacilityRecord | null>;
+  };
+};
+
 type HierarchyNode = {
   level: string;
   id?: Id<"facilities"> | Id<"departments">;
@@ -99,7 +105,7 @@ export const getSettingWithInheritance = query({
  * Recursive bubble-up through facility hierarchy
  */
 async function bubbleUpFacility(
-  ctx: { db: { get: (id: Id<"facilities">) => Promise<FacilityRecord | null> } },
+  ctx: FacilityCtx,
   facilityId: Id<"facilities">,
   settingKey: string,
 ): Promise<SettingLookupResult> {

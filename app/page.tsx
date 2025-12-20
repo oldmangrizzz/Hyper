@@ -59,9 +59,7 @@ const patientTemplates: Patient[] = [
     mrn: "T000001",
     firstName: "Baby",
     lastName: "Doe",
-    dateOfBirth: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000)
-      .toISOString()
-      .split("T")[0],
+    dateOfBirth: "2025-12-17",
     sex: "Male",
     address: "123 Main St",
     city: "Springfield",
@@ -73,11 +71,7 @@ const patientTemplates: Patient[] = [
     mrn: "T000002",
     firstName: "Johnny",
     lastName: "Smith",
-    dateOfBirth: new Date(
-      Date.now() - 10 * 365 * 24 * 60 * 60 * 1000,
-    )
-      .toISOString()
-      .split("T")[0],
+    dateOfBirth: "2015-12-20",
     sex: "Male",
     address: "456 Oak Ave",
     city: "Springfield",
@@ -89,11 +83,7 @@ const patientTemplates: Patient[] = [
     mrn: "T000003",
     firstName: "Jane",
     lastName: "Johnson",
-    dateOfBirth: new Date(
-      Date.now() - 35 * 365 * 24 * 60 * 60 * 1000,
-    )
-      .toISOString()
-      .split("T")[0],
+    dateOfBirth: "1990-12-20",
     sex: "Female",
     address: "789 River Rd",
     city: "Springfield",
@@ -284,7 +274,19 @@ function calculateAge(dateOfBirth: string): number {
   if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
     age -= 1;
   }
-  return age;
+  return Math.max(age, 0);
+}
+
+function formatDateTime(value: string) {
+  const date = new Date(value);
+  return new Intl.DateTimeFormat("en-US", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  }).format(date);
 }
 
 function severityBadge(severity: ValidationSeverity) {
@@ -322,7 +324,7 @@ export default function Home() {
     useState<keyof typeof securityRoles>("Unit Nurse");
   const [mitosisStats, setMitosisStats] = useState({
     runs: 3,
-    lastRun: new Date().toISOString(),
+    lastRun: "2025-12-01T12:00:00Z",
     purged: 24,
     templatesUpdated: 3,
   });
@@ -1033,7 +1035,7 @@ export default function Home() {
               <div className="rounded-xl bg-slate-50 p-3 ring-1 ring-slate-200">
                 <p className="text-slate-500">Last Run</p>
                 <p className="text-lg font-semibold text-slate-900">
-                  {new Date(mitosisStats.lastRun).toLocaleString()}
+                  {formatDateTime(mitosisStats.lastRun)}
                 </p>
               </div>
               <div className="rounded-xl bg-slate-50 p-3 ring-1 ring-slate-200">
