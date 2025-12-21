@@ -1,7 +1,7 @@
 // Mitosis Reset Engine
 // Nightly mitigation script to prevent environment rot
 
-import { mutation, query, internalMutation } from "./_generated/server";
+import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 
 /**

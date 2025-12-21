@@ -260,7 +260,7 @@ export const getAvailableBedsForPatient = query({
     }
 
     // Get all available beds
-    let bedsQuery = ctx.db
+    const bedsQuery = ctx.db
       .query("beds")
       .filter((q) => q.eq(q.field("status"), "Available"));
 
