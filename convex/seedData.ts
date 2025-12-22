@@ -1,7 +1,7 @@
 // Data Initialization and Seeding
 // Creates initial static records for departments, rooms, beds, facilities, security classes
 
-import { mutation } from "./_generated/server";
+import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 
 /**
@@ -504,7 +504,7 @@ export const resetSystem = mutation({
 /**
  * Get system initialization status
  */
-export const getSystemStatus = mutation({
+export const getSystemStatus = query({
   args: {},
   handler: async (ctx) => {
     const facilitiesCount = (await ctx.db.query("facilities").collect()).length;
